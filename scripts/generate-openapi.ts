@@ -31,7 +31,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 // Lazy require so this file stays under TS but uses the JS module the build
 // emitted — the JS carries the swagger-plugin's metadata that ts-node doesn't.
-const { AppModule } = require(resolve(__dirname, '..', 'dist', 'src', 'app.module'));
+const { AppModule } = require(resolve(__dirname, '..', 'dist', 'app.module'));
 
 /**
  * Bump on every committed change to the API surface. Rules in
