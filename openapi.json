@@ -1,0 +1,6120 @@
+{
+  "components": {
+    "schemas": {
+      "AcceptInvitationResponseDto": {
+        "properties": {
+          "eventId": {
+            "description": "Event the user is now a planning member of.",
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "eventId"
+        ],
+        "type": "object"
+      },
+      "AddInviteeDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Olamide",
+            "maxLength": 120,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "AddInviteeResultDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "inviteeId": {
+            "description": "Present when outcome is created/updated/skipped_existing.",
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "outcome": {
+            "enum": [
+              "created",
+              "updated",
+              "skipped_existing",
+              "invalid"
+            ],
+            "example": "created",
+            "type": "string"
+          },
+          "reason": {
+            "description": "Present when outcome is invalid or skipped_existing (duplicate in batch).",
+            "example": "Not a valid email.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "outcome"
+        ],
+        "type": "object"
+      },
+      "AddInviteesResponseDto": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/AddInviteeResultDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "results"
+        ],
+        "type": "object"
+      },
+      "AddonDto": {
+        "properties": {
+          "amountMinor": {
+            "description": "Price in kobo (NGN minor unit) as a string — BigInt-safe.",
+            "example": "500000",
+            "type": "string"
+          },
+          "currency": {
+            "example": "NGN",
+            "type": "string"
+          },
+          "displayName": {
+            "example": "Anonymous Proposals",
+            "type": "string"
+          },
+          "featurePatch": {
+            "additionalProperties": true,
+            "description": "Patch deep-merged onto event.features when this add-on is purchased.",
+            "example": {
+              "sharing": {
+                "anonymousProposals": true
+              }
+            },
+            "type": "object"
+          },
+          "slug": {
+            "example": "anonymous_proposals",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "displayName",
+          "amountMinor",
+          "currency",
+          "featurePatch"
+        ],
+        "type": "object"
+      },
+      "BrandResponseDto": {
+        "properties": {
+          "accentColor": {
+            "example": "#F2C94C",
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "example": "#4A2B7E",
+            "nullable": true,
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "example": "http://localhost:3001/uploads/events/6bb69700-72eb-40a0-b37e-e6c0b8b004a9/cover-2c7d.jpg",
+            "nullable": true,
+            "type": "string"
+          },
+          "logoUrl": {
+            "example": "http://localhost:3001/uploads/events/6bb69700-72eb-40a0-b37e-e6c0b8b004a9/logo-9f3a.png",
+            "nullable": true,
+            "type": "string"
+          },
+          "textColor": {
+            "example": "#1A1A1A",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "BulkAddInviteesDto": {
+        "properties": {
+          "invitees": {
+            "description": "Up to 500 invitees in one go. Server enforces tier max.",
+            "items": {
+              "$ref": "#/components/schemas/AddInviteeDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "invitees"
+        ],
+        "type": "object"
+      },
+      "CancelRemindersResponseDto": {
+        "properties": {
+          "cancelled": {
+            "description": "How many scheduled reminders were transitioned to cancelled.",
+            "example": 7,
+            "type": "number"
+          }
+        },
+        "required": [
+          "cancelled"
+        ],
+        "type": "object"
+      },
+      "CopilotDraftResponseDto": {
+        "properties": {
+          "costCents": {
+            "description": "Cost of *this* call in USD cents (Opus is ~5x Sonnet so expect 10-30¢ a draft).",
+            "example": 18,
+            "type": "number"
+          },
+          "description": {
+            "example": "Surprise 30th for Bola — ~40 guests, Lekki, modest budget, last Saturday of July.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventType": {
+            "example": "birthday",
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "YYYY-MM-DD or null when the user was vague.",
+            "example": "2026-07-25",
+            "nullable": true,
+            "type": "string"
+          },
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/CopilotDraftSegmentDto"
+            },
+            "type": "array"
+          },
+          "title": {
+            "example": "Bola's surprise 30th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "eventType",
+          "segments",
+          "costCents"
+        ],
+        "type": "object"
+      },
+      "CopilotDraftSegmentDto": {
+        "properties": {
+          "description": {
+            "example": "Outdoor or rooftop venue in Lekki with capacity for 40, ideally one Bola has never been to.",
+            "type": "string"
+          },
+          "segmentType": {
+            "enum": [
+              "date_time",
+              "venue",
+              "budget",
+              "agenda",
+              "guest_list",
+              "roles",
+              "theme",
+              "travel"
+            ],
+            "example": "venue",
+            "type": "string"
+          },
+          "title": {
+            "example": "Pick a venue",
+            "type": "string"
+          }
+        },
+        "required": [
+          "segmentType",
+          "title",
+          "description"
+        ],
+        "type": "object"
+      },
+      "CreateEventDraftDto": {
+        "properties": {
+          "description": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "eventType": {
+            "enum": [
+              "wedding",
+              "birthday",
+              "offsite",
+              "hangout",
+              "conference",
+              "reunion",
+              "fundraiser",
+              "other"
+            ],
+            "example": "wedding",
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "Provisional event date; can change while planning.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "example": "Wedding planning — Tunde & Bola",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "eventType"
+        ],
+        "type": "object"
+      },
+      "CreateObjectionDto": {
+        "properties": {
+          "reason": {
+            "description": "Optional reason for objecting. Strongly encouraged for productive deliberation.",
+            "maxLength": 1000,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CreatePaymentIntentDto": {
+        "properties": {
+          "addonSlugs": {
+            "description": "Optional add-on slugs purchased alongside the tier.",
+            "example": [
+              "ai_vibe_pack",
+              "holiday_scanner"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "callbackUrl": {
+            "description": "Where Paystack redirects after hosted-checkout completes. Defaults to WEB_ORIGIN/events/:id/return.",
+            "type": "string"
+          },
+          "eventId": {
+            "description": "Draft event the payment provisions.",
+            "type": "string"
+          },
+          "tierSlug": {
+            "description": "Slug of the chosen tier.",
+            "example": "occasion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "eventId",
+          "tierSlug"
+        ],
+        "type": "object"
+      },
+      "CreateProposalDto": {
+        "properties": {
+          "notes": {
+            "description": "Optional context — reasoning, links, cost estimate, capacity notes.",
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "summary": {
+            "description": "Short summary of the proposed answer (e.g. \"Lola's Rooftop, Yaba\").",
+            "example": "Lola's Rooftop, Yaba",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "typed": {
+            "description": "Optional structured payload (Phase 8+).",
+            "type": "object"
+          }
+        },
+        "required": [
+          "summary"
+        ],
+        "type": "object"
+      },
+      "CreateSegmentDto": {
+        "properties": {
+          "description": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "position": {
+            "description": "Optional explicit position. Defaults to the end of the list.",
+            "minimum": 0,
+            "type": "number"
+          },
+          "segmentType": {
+            "description": "Type slug — drives the card icon. Use one of the known set (date_time, venue, budget, agenda, guest_list, roles, theme, travel) for a meaningful icon, or anything else for the generic fallback.",
+            "example": "venue",
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "example": "Catering",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "segmentType"
+        ],
+        "type": "object"
+      },
+      "CurrentUserResponseDto": {
+        "properties": {
+          "email": {
+            "example": "organizer@example.com",
+            "type": "string"
+          },
+          "emailVerified": {
+            "example": true,
+            "type": "boolean"
+          },
+          "id": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Bakare",
+            "nullable": true,
+            "type": "string"
+          },
+          "profile": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserProfileDto"
+              }
+            ],
+            "description": "EPDEMA-side profile row. Auto-created on first /users/me call."
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "profile"
+        ],
+        "type": "object"
+      },
+      "DraftEventDto": {
+        "properties": {
+          "description": {
+            "description": "Free-form description of the event the user wants to plan. The copilot reads this and proposes title + type + date + initial segments.",
+            "example": "30th birthday for my partner Bola, surprise-style, ~40 close friends, modest budget, somewhere in Lekki, last Saturday of July.",
+            "maxLength": 2000,
+            "minLength": 10,
+            "type": "string"
+          }
+        },
+        "required": [
+          "description"
+        ],
+        "type": "object"
+      },
+      "EmbeddedObjectionDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "7c0b4a30-2f1d-4b3c-8e9a-1a2b3c4d5e6f",
+            "format": "uuid",
+            "type": "string"
+          },
+          "proposalId": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+            "format": "uuid",
+            "type": "string"
+          },
+          "raisedBy": {
+            "$ref": "#/components/schemas/UserRefDto"
+          },
+          "raisedById": {
+            "example": "usr_3K9p1y2Mn8oW5dC7eUj4tZ",
+            "type": "string"
+          },
+          "reason": {
+            "example": "Capacity is too tight if we keep the plus-ones list as is.",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "live",
+              "withdrawn"
+            ],
+            "example": "live",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "proposalId",
+          "raisedById",
+          "raisedBy",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "EmbeddedProposalDto": {
+        "properties": {
+          "anonymous": {
+            "example": false,
+            "type": "boolean"
+          },
+          "createdAt": {
+            "example": "2026-05-26T10:22:00.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+            "format": "uuid",
+            "type": "string"
+          },
+          "objections": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedObjectionDto"
+            },
+            "type": "array"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "description": "Shape depends on the parent segment.segmentType — validated server-side per type. E.g. a venue proposal has { name, address, capacity }; a date_time proposal has { date, startsAt }.",
+            "example": {
+              "address": "12 Marina Way, Lagos",
+              "capacity": 150,
+              "name": "Garden Court Hotel"
+            },
+            "type": "object"
+          },
+          "proposedBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserRefDto"
+              }
+            ],
+            "description": "Null when the proposal is anonymous (event has the 'anonymous_proposals' add-on enabled).",
+            "nullable": true
+          },
+          "proposedById": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "type": "string"
+          },
+          "segmentId": {
+            "example": "e3b0c442-98fc-4e1b-9c2b-9d3a7c2f1a4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "live",
+              "withdrawn",
+              "eliminated",
+              "winner"
+            ],
+            "example": "live",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T10:22:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "segmentId",
+          "proposedById",
+          "anonymous",
+          "payload",
+          "state",
+          "createdAt",
+          "updatedAt",
+          "objections"
+        ],
+        "type": "object"
+      },
+      "EventAddonRefDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "slug": {
+            "example": "anonymous_proposals",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "EventRefDto": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "scheduledDate": {
+            "example": "2026-07-25",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Bola's surprise 30th",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "type": "object"
+      },
+      "EventResponseDto": {
+        "properties": {
+          "addons": {
+            "items": {
+              "$ref": "#/components/schemas/EventAddonRefDto"
+            },
+            "type": "array"
+          },
+          "archivedAt": {
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "creatorId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          },
+          "currency": {
+            "example": "NGN",
+            "type": "string"
+          },
+          "currentUserRole": {
+            "description": "The viewing user's role on this event. Populated on single-event reads (GET /:id) and after mutations; absent on list responses.",
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "type": "string"
+          },
+          "customSubdomain": {
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "example": "Outdoor evening reception, ~120 guests.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventType": {
+            "example": "wedding",
+            "type": "string"
+          },
+          "features": {
+            "additionalProperties": true,
+            "description": "Tier-derived feature bag. Shape: { sharing: {...}, branding: {...}, invitees: {...}, … }.",
+            "example": {
+              "branding": {
+                "customSharePage": false
+              },
+              "invitees": {
+                "customQuestions": 5,
+                "maxInvitees": 200
+              },
+              "sharing": {
+                "customSlug": true,
+                "emailReminders": true
+              }
+            },
+            "type": "object"
+          },
+          "id": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "provisionedAt": {
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "publishedAt": {
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "YYYY-MM-DD; null when no date is locked yet.",
+            "example": "2026-06-24",
+            "nullable": true,
+            "type": "string"
+          },
+          "shareSlug": {
+            "example": "tunde-bola",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "planning",
+              "published",
+              "past",
+              "archived"
+            ],
+            "example": "draft",
+            "type": "string"
+          },
+          "tierSlug": {
+            "example": "occasion",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Tunde & Bola — Wedding",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "creatorId",
+          "title",
+          "eventType",
+          "state",
+          "features",
+          "currency",
+          "createdAt",
+          "updatedAt",
+          "addons"
+        ],
+        "type": "object"
+      },
+      "EventReviewDto": {
+        "properties": {
+          "comment": {
+            "description": "Free-form comment. Surfaced only when the viewer is the reviewee or has admin rights on the event — null otherwise.",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-25T10:14:00.000Z",
+            "type": "string"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "example": 5,
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          },
+          "revieweeId": {
+            "example": "usr_creator...",
+            "type": "string"
+          },
+          "reviewerId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "reviewerId",
+          "revieweeId",
+          "rating",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "EventReviewsListResponseDto": {
+        "properties": {
+          "isPrivileged": {
+            "description": "Whether the viewer can see all reviews (admin/creator) vs only their own row. Lets the UI decide whether to render the full list or just the \"you reviewed\" card.",
+            "example": true,
+            "type": "boolean"
+          },
+          "reviews": {
+            "items": {
+              "$ref": "#/components/schemas/EventReviewWithReviewerDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "reviews",
+          "isPrivileged"
+        ],
+        "type": "object"
+      },
+      "EventReviewWithReviewerDto": {
+        "properties": {
+          "comment": {
+            "description": "Free-form comment. Surfaced only when the viewer is the reviewee or has admin rights on the event — null otherwise.",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-25T10:14:00.000Z",
+            "type": "string"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "example": 5,
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          },
+          "revieweeId": {
+            "example": "usr_creator...",
+            "type": "string"
+          },
+          "reviewer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewerSummaryDto"
+              }
+            ],
+            "description": "Reviewer profile snippet — null for non-privileged viewers.",
+            "nullable": true
+          },
+          "reviewerId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "reviewerId",
+          "revieweeId",
+          "rating",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "HealthChecksDto": {
+        "properties": {
+          "postgres": {
+            "enum": [
+              "ok",
+              "fail"
+            ],
+            "example": "ok",
+            "type": "string"
+          },
+          "redis": {
+            "enum": [
+              "ok",
+              "fail"
+            ],
+            "example": "ok",
+            "type": "string"
+          }
+        },
+        "required": [
+          "postgres",
+          "redis"
+        ],
+        "type": "object"
+      },
+      "HealthResponseDto": {
+        "properties": {
+          "checks": {
+            "$ref": "#/components/schemas/HealthChecksDto"
+          },
+          "status": {
+            "description": "Overall status — \"degraded\" when any dependency check fails.",
+            "enum": [
+              "ok",
+              "degraded"
+            ],
+            "example": "ok",
+            "type": "string"
+          },
+          "timestamp": {
+            "description": "ISO-8601 timestamp at which the check was performed.",
+            "example": "2026-06-02T12:34:56.789Z",
+            "type": "string"
+          },
+          "uptime": {
+            "description": "Process uptime in seconds (from `process.uptime()`).",
+            "example": 12345.678,
+            "type": "number"
+          }
+        },
+        "required": [
+          "status",
+          "timestamp",
+          "uptime",
+          "checks"
+        ],
+        "type": "object"
+      },
+      "HolidayScanResponseDto": {
+        "properties": {
+          "costCents": {
+            "description": "Cost of this call in USD cents. 0 on `latest()` reads.",
+            "example": 3,
+            "type": "number"
+          },
+          "scannedDate": {
+            "description": "The scheduledDate the scan was run against. The one-shot enforcement uses this so a date change unlocks a re-scan.",
+            "example": "2026-06-24",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/HolidayWarningDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "warnings",
+          "scannedDate",
+          "costCents"
+        ],
+        "type": "object"
+      },
+      "HolidayWarningDto": {
+        "properties": {
+          "detail": {
+            "example": "June is peak rainy season — outdoor venues at risk. Consider a covered backup or shift to October.",
+            "type": "string"
+          },
+          "severity": {
+            "description": "info = worth-knowing context; warning = likely friction; critical = certain conflict.",
+            "enum": [
+              "info",
+              "warning",
+              "critical"
+            ],
+            "example": "warning",
+            "type": "string"
+          },
+          "title": {
+            "example": "Rainy season in Lagos",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "title",
+          "detail"
+        ],
+        "type": "object"
+      },
+      "InviteeAdminDto": {
+        "properties": {
+          "addedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "addedById": {
+            "example": "usr_2N9k8x...",
+            "nullable": true,
+            "type": "string"
+          },
+          "customAnswers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Answers to custom RSVP questions, keyed by question id.",
+            "example": {
+              "dietary": "Vegetarian",
+              "plusOne": "Yes"
+            },
+            "nullable": true,
+            "type": "object"
+          },
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "eventId": {
+            "example": "4f4f1f6a-a7ed-4d8a-9a44-5bb2a3ce4a3e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "invitedAt": {
+            "description": "When the invitation email was sent; null if not yet invited.",
+            "example": "2026-05-27T09:00:00.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Olamide",
+            "nullable": true,
+            "type": "string"
+          },
+          "respondedAt": {
+            "description": "When the invitee submitted their RSVP; null if still pending.",
+            "example": "2026-05-28T14:32:00.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "rsvpToken": {
+            "description": "Unguessable base64url token (~32 chars) — admin can reshare out-of-band if email failed.",
+            "example": "aBcD1234EFgh5678IJklMNop9012QrSt",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "email",
+          "status",
+          "rsvpToken",
+          "addedAt"
+        ],
+        "type": "object"
+      },
+      "InviteeStatusCountsDto": {
+        "properties": {
+          "maybe": {
+            "example": 5,
+            "type": "number"
+          },
+          "no": {
+            "example": 9,
+            "type": "number"
+          },
+          "pending": {
+            "example": 24,
+            "type": "number"
+          },
+          "total": {
+            "example": 125,
+            "type": "number"
+          },
+          "yes": {
+            "example": 87,
+            "type": "number"
+          }
+        },
+        "required": [
+          "pending",
+          "yes",
+          "no",
+          "maybe",
+          "total"
+        ],
+        "type": "object"
+      },
+      "InviteMemberDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "maxLength": 255,
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "InviteMemberResponseDto": {
+        "properties": {
+          "acceptedAt": {
+            "description": "Timestamp the recipient accepted; null while pending/declined/revoked/expired.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "acceptUrl": {
+            "description": "Full URL the recipient can use to accept. Same token is in the email; admins copy this to share manually.",
+            "example": "https://app.epdema.com/invitations/3f9c1e7b8a2d4f5e6c0b9a1d2e3f4a5b",
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-02T08:12:00.000Z",
+            "type": "string"
+          },
+          "email": {
+            "example": "bola@example.com",
+            "type": "string"
+          },
+          "emailError": {
+            "description": "Error message if email delivery failed; absent on success.",
+            "example": "Resend sandbox: recipient not on allowlist",
+            "type": "string"
+          },
+          "emailSent": {
+            "description": "Whether the invitation email was sent successfully (best-effort).",
+            "example": true,
+            "type": "boolean"
+          },
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "expiresAt": {
+            "example": "2026-06-09T08:12:00.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviterId": {
+            "description": "User id of the admin who sent the invitation.",
+            "example": "usr_1A2b3C4d5E6f7G8h9I0jKl",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "example": "contributor",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "revoked",
+              "expired"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "email",
+          "role",
+          "status",
+          "expiresAt",
+          "inviterId",
+          "createdAt",
+          "acceptUrl",
+          "emailSent"
+        ],
+        "type": "object"
+      },
+      "LockSegmentDto": {
+        "properties": {
+          "proposalId": {
+            "description": "The proposal that wins. Must belong to this segment and be live with zero live objections.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "proposalId"
+        ],
+        "type": "object"
+      },
+      "ObjectionRaisedByDto": {
+        "properties": {
+          "email": {
+            "example": "bola@example.com",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_3K9p1y2Mn8oW5dC7eUj4tZ",
+            "type": "string"
+          },
+          "name": {
+            "example": "Bola Adeyemi",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ObjectionResponseDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "7c0b4a30-2f1d-4b3c-8e9a-1a2b3c4d5e6f",
+            "format": "uuid",
+            "type": "string"
+          },
+          "proposalId": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+            "format": "uuid",
+            "type": "string"
+          },
+          "raisedBy": {
+            "$ref": "#/components/schemas/ObjectionRaisedByDto"
+          },
+          "raisedById": {
+            "example": "usr_3K9p1y2Mn8oW5dC7eUj4tZ",
+            "type": "string"
+          },
+          "reason": {
+            "example": "Capacity is too tight if we keep the plus-ones list as is.",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "live",
+              "withdrawn"
+            ],
+            "example": "live",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "proposalId",
+          "raisedById",
+          "raisedBy",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PaymentDto": {
+        "properties": {
+          "amountMinor": {
+            "description": "Amount in kobo (NGN minor unit) as a string — BigInt-safe.",
+            "example": "3900000",
+            "type": "string"
+          },
+          "currency": {
+            "example": "NGN",
+            "type": "string"
+          },
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "failureReason": {
+            "description": "Set when status=failed (e.g. \"card_declined\").",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "finalizedAt": {
+            "example": "2026-05-26T08:14:23.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "7a0a1b50-31c2-4d97-9d7e-1a5e0f0a2c4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "initiatedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "processor": {
+            "enum": [
+              "paystack",
+              "internal_free"
+            ],
+            "example": "paystack",
+            "type": "string"
+          },
+          "processorReference": {
+            "description": "Paystack reference (UUID) — null for the free-tier internal processor.",
+            "example": "ref_3f8c2e1a4b9d",
+            "nullable": true,
+            "type": "string"
+          },
+          "purpose": {
+            "description": "What the payment is for.",
+            "enum": [
+              "tier",
+              "addon"
+            ],
+            "example": "tier",
+            "type": "string"
+          },
+          "purposeRef": {
+            "description": "Slug of the tier or add-on this payment unlocks.",
+            "example": "occasion",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "success",
+              "failed",
+              "refunded"
+            ],
+            "example": "pending",
+            "type": "string"
+          },
+          "taxMinor": {
+            "description": "Nigerian VAT in kobo as a string — BigInt-safe.",
+            "example": "292500",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "purpose",
+          "amountMinor",
+          "taxMinor",
+          "currency",
+          "processor",
+          "status",
+          "initiatedAt"
+        ],
+        "type": "object"
+      },
+      "PaymentIntentResponseDto": {
+        "properties": {
+          "amountMinor": {
+            "description": "Total amount in kobo as a string — BigInt-safe.",
+            "example": "3900000",
+            "type": "string"
+          },
+          "authorizationUrl": {
+            "description": "Paystack-hosted checkout URL. Null for free-tier (auto-success) or replays — the client should poll payment status instead of redirecting.",
+            "example": "https://checkout.paystack.com/abc123",
+            "nullable": true,
+            "type": "string"
+          },
+          "currency": {
+            "example": "NGN",
+            "type": "string"
+          },
+          "paymentId": {
+            "example": "7a0a1b50-31c2-4d97-9d7e-1a5e0f0a2c4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "reference": {
+            "description": "Paystack reference — null for the free-tier internal processor.",
+            "example": "ref_3f8c2e1a4b9d",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "success",
+              "failed"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "paymentId",
+          "status",
+          "amountMinor",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "PlanningInvitationDto": {
+        "properties": {
+          "acceptedAt": {
+            "description": "Timestamp the recipient accepted; null while pending/declined/revoked/expired.",
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-02T08:12:00.000Z",
+            "type": "string"
+          },
+          "email": {
+            "example": "bola@example.com",
+            "type": "string"
+          },
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "expiresAt": {
+            "example": "2026-06-09T08:12:00.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviterId": {
+            "description": "User id of the admin who sent the invitation.",
+            "example": "usr_1A2b3C4d5E6f7G8h9I0jKl",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "example": "contributor",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "revoked",
+              "expired"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "email",
+          "role",
+          "status",
+          "expiresAt",
+          "inviterId",
+          "createdAt"
+        ],
+        "type": "object"
+      },
+      "PlanningMemberDto": {
+        "properties": {
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "a3f1d9c8-4b2e-4f6a-9c1d-7e8f0a2b3c4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "invitedById": {
+            "description": "The member who invited this user. Null for the event creator (auto-added as first admin).",
+            "example": "usr_1A2b3C4d5E6f7G8h9I0jKl",
+            "nullable": true,
+            "type": "string"
+          },
+          "joinedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "example": "contributor",
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/PlanningMemberUserDto"
+          },
+          "userId": {
+            "example": "usr_2N9k8xQpL3vM5Rb1Tw7yZc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "userId",
+          "role",
+          "joinedAt",
+          "user"
+        ],
+        "type": "object"
+      },
+      "PlanningMemberUserDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_2N9k8xQpL3vM5Rb1Tw7yZc",
+            "type": "string"
+          },
+          "image": {
+            "example": "https://lh3.googleusercontent.com/a/ACg8ocJ...",
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Adebayo",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ],
+        "type": "object"
+      },
+      "ProposalObjectionDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "7c0b4a30-2f1d-4b3c-8e9a-1a2b3c4d5e6f",
+            "format": "uuid",
+            "type": "string"
+          },
+          "proposalId": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+            "format": "uuid",
+            "type": "string"
+          },
+          "raisedBy": {
+            "$ref": "#/components/schemas/ProposalObjectionRaisedByDto"
+          },
+          "raisedById": {
+            "example": "usr_3K9p1y2Mn8oW5dC7eUj4tZ",
+            "type": "string"
+          },
+          "reason": {
+            "example": "Capacity is too tight if we keep the plus-ones list as is.",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "live",
+              "withdrawn"
+            ],
+            "example": "live",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-27T09:01:14.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "proposalId",
+          "raisedById",
+          "raisedBy",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "ProposalObjectionRaisedByDto": {
+        "properties": {
+          "email": {
+            "example": "bola@example.com",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_3K9p1y2Mn8oW5dC7eUj4tZ",
+            "type": "string"
+          },
+          "name": {
+            "example": "Bola Adeyemi",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ProposalProposedByDto": {
+        "properties": {
+          "email": {
+            "example": "amaka@example.com",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "type": "string"
+          },
+          "name": {
+            "example": "Amaka Okonkwo",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ProposalResponseDto": {
+        "properties": {
+          "anonymous": {
+            "example": false,
+            "type": "boolean"
+          },
+          "createdAt": {
+            "example": "2026-05-26T10:22:00.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef0123456789",
+            "format": "uuid",
+            "type": "string"
+          },
+          "objections": {
+            "items": {
+              "$ref": "#/components/schemas/ProposalObjectionDto"
+            },
+            "type": "array"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "description": "Shape depends on the parent segment.segmentType — validated server-side per type. E.g. a venue proposal has { name, address, capacity }; a date_time proposal has { date, startsAt }.",
+            "example": {
+              "address": "12 Marina Way, Lagos",
+              "capacity": 150,
+              "name": "Garden Court Hotel"
+            },
+            "type": "object"
+          },
+          "proposedBy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProposalProposedByDto"
+              }
+            ],
+            "description": "Null when the proposal is anonymous (event has the 'anonymous_proposals' add-on enabled).",
+            "nullable": true
+          },
+          "proposedById": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "type": "string"
+          },
+          "segmentId": {
+            "example": "e3b0c442-98fc-4e1b-9c2b-9d3a7c2f1a4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "live",
+              "withdrawn",
+              "eliminated",
+              "winner"
+            ],
+            "example": "live",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T10:22:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "segmentId",
+          "proposedById",
+          "anonymous",
+          "payload",
+          "state",
+          "createdAt",
+          "updatedAt",
+          "objections"
+        ],
+        "type": "object"
+      },
+      "PublicBrandDto": {
+        "properties": {
+          "accentColor": {
+            "example": "#F59E0B",
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "example": "#1F2937",
+            "nullable": true,
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "example": "https://cdn.epdema.com/brand/4f4f1f6a/cover.jpg",
+            "nullable": true,
+            "type": "string"
+          },
+          "logoUrl": {
+            "example": "https://cdn.epdema.com/brand/4f4f1f6a/logo.png",
+            "nullable": true,
+            "type": "string"
+          },
+          "textColor": {
+            "example": "#FFFFFF",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PublicCreatorDto": {
+        "properties": {
+          "name": {
+            "example": "Tunde Adebayo",
+            "nullable": true,
+            "type": "string"
+          },
+          "ratingAvg": {
+            "description": "Decimal-as-string. `null` when the creator opted out of public rating OR has zero reviews. Use together with `ratingCount`.",
+            "example": "4.6",
+            "nullable": true,
+            "type": "string"
+          },
+          "ratingCount": {
+            "description": "Always paired with `ratingAvg`. `0` here = \"hide the badge entirely\" on the public page.",
+            "example": 12,
+            "type": "number"
+          }
+        },
+        "required": [
+          "ratingCount"
+        ],
+        "type": "object"
+      },
+      "PublicDecisionDto": {
+        "properties": {
+          "decidedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "description": {
+            "example": "Outdoor garden ceremony at sunset.",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "d8a4c1a2-9b6e-4f5b-9c1a-2d8b6e4f5b9c",
+            "format": "uuid",
+            "type": "string"
+          },
+          "position": {
+            "example": 0,
+            "type": "number"
+          },
+          "segmentType": {
+            "example": "venue",
+            "type": "string"
+          },
+          "title": {
+            "example": "Ceremony venue",
+            "type": "string"
+          },
+          "value": {
+            "additionalProperties": true,
+            "description": "The locked decision payload. Shape varies by segmentType (venue, time, menu, …).",
+            "example": {
+              "address": "12 Awolowo Rd, Ikoyi, Lagos",
+              "name": "Sunset Gardens"
+            },
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "segmentType",
+          "position"
+        ],
+        "type": "object"
+      },
+      "PublicInvitationDto": {
+        "properties": {
+          "email": {
+            "example": "bola@example.com",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/PublicInvitationEventDto"
+          },
+          "expiresAt": {
+            "example": "2026-06-09T08:12:00.000Z",
+            "type": "string"
+          },
+          "id": {
+            "example": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviter": {
+            "$ref": "#/components/schemas/PublicInvitationInviterDto"
+          },
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "example": "contributor",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "accepted",
+              "declined",
+              "revoked",
+              "expired"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "role",
+          "status",
+          "expiresAt",
+          "event",
+          "inviter"
+        ],
+        "type": "object"
+      },
+      "PublicInvitationEventDto": {
+        "properties": {
+          "eventType": {
+            "example": "wedding",
+            "type": "string"
+          },
+          "id": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "YYYY-MM-DD; null when no date is locked yet.",
+            "example": "2026-06-24",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Tunde & Bola — Wedding",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "eventType"
+        ],
+        "type": "object"
+      },
+      "PublicInvitationInviterDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_1A2b3C4d5E6f7G8h9I0jKl",
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Adebayo",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email"
+        ],
+        "type": "object"
+      },
+      "PublicRsvpEventDto": {
+        "properties": {
+          "brand": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicBrandDto"
+              }
+            ],
+            "description": "Public brand payload — null when the event's tier doesn't grant the customSharePage feature, otherwise the organizer's configured colors/logo/cover.",
+            "nullable": true
+          },
+          "description": {
+            "example": "Outdoor evening reception, ~120 guests.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventType": {
+            "example": "wedding",
+            "type": "string"
+          },
+          "id": {
+            "example": "4f4f1f6a-a7ed-4d8a-9a44-5bb2a3ce4a3e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "rsvpQuestions": {
+            "items": {
+              "$ref": "#/components/schemas/RsvpQuestionDto"
+            },
+            "type": "array"
+          },
+          "scheduledDate": {
+            "description": "YYYY-MM-DD; null when no date is locked yet.",
+            "example": "2026-06-24",
+            "nullable": true,
+            "type": "string"
+          },
+          "shareSlug": {
+            "example": "tunde-bola",
+            "nullable": true,
+            "type": "string"
+          },
+          "title": {
+            "example": "Tunde & Bola — Wedding",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "eventType",
+          "rsvpQuestions"
+        ],
+        "type": "object"
+      },
+      "PublicRsvpInviteeDto": {
+        "properties": {
+          "customAnswers": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "dietary": "Vegetarian"
+            },
+            "nullable": true,
+            "type": "object"
+          },
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "id": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "example": "Tunde Olamide",
+            "nullable": true,
+            "type": "string"
+          },
+          "respondedAt": {
+            "example": "2026-05-28T14:32:00.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "example": "pending",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "status"
+        ],
+        "type": "object"
+      },
+      "PublicRsvpResponseDto": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/PublicRsvpEventDto"
+          },
+          "invitee": {
+            "$ref": "#/components/schemas/PublicRsvpInviteeDto"
+          }
+        },
+        "required": [
+          "invitee",
+          "event"
+        ],
+        "type": "object"
+      },
+      "PublicShareResponseDto": {
+        "properties": {
+          "brand": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicBrandDto"
+              }
+            ],
+            "description": "Custom brand for the share page. Null when the event tier does not grant custom branding, or when the organizer has not configured anything.",
+            "nullable": true
+          },
+          "creator": {
+            "$ref": "#/components/schemas/PublicCreatorDto"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/PublicDecisionDto"
+            },
+            "type": "array"
+          },
+          "description": {
+            "example": "Outdoor evening reception, ~120 guests.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventType": {
+            "example": "wedding",
+            "type": "string"
+          },
+          "id": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "publishedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "YYYY-MM-DD; null when no date is locked yet.",
+            "example": "2026-06-24",
+            "nullable": true,
+            "type": "string"
+          },
+          "shareSlug": {
+            "example": "tunde-bola",
+            "nullable": true,
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "draft",
+              "planning",
+              "published",
+              "past",
+              "archived"
+            ],
+            "example": "published",
+            "type": "string"
+          },
+          "title": {
+            "example": "Tunde & Bola — Wedding",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "eventType",
+          "state",
+          "creator",
+          "decisions"
+        ],
+        "type": "object"
+      },
+      "PublishBlockerDto": {
+        "properties": {
+          "details": {
+            "additionalProperties": true,
+            "description": "Free-form details about the blocker (e.g. which segment is unlocked).",
+            "type": "object"
+          },
+          "kind": {
+            "enum": [
+              "state_not_publishable",
+              "no_scheduled_date",
+              "no_segments",
+              "unlocked_segments",
+              "odd_voting_count"
+            ],
+            "example": "unlocked_segments",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind"
+        ],
+        "type": "object"
+      },
+      "PublishEventDto": {
+        "properties": {
+          "customSlug": {
+            "description": "Reserved — custom share slug requires Occasion+ tier (Phase 5c).",
+            "maxLength": 64,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PublishReadinessCountsDto": {
+        "properties": {
+          "lockedSegments": {
+            "example": 5,
+            "type": "number"
+          },
+          "planningMembers": {
+            "example": 4,
+            "type": "number"
+          },
+          "totalSegments": {
+            "example": 6,
+            "type": "number"
+          }
+        },
+        "required": [
+          "totalSegments",
+          "lockedSegments",
+          "planningMembers"
+        ],
+        "type": "object"
+      },
+      "PublishReadinessResponseDto": {
+        "properties": {
+          "blockers": {
+            "items": {
+              "$ref": "#/components/schemas/PublishBlockerDto"
+            },
+            "type": "array"
+          },
+          "counts": {
+            "$ref": "#/components/schemas/PublishReadinessCountsDto"
+          },
+          "ready": {
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ready",
+          "blockers",
+          "counts"
+        ],
+        "type": "object"
+      },
+      "RemindersListResponseDto": {
+        "properties": {
+          "reminders": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduledReminderDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "reminders"
+        ],
+        "type": "object"
+      },
+      "RenameShareSlugDto": {
+        "properties": {
+          "slug": {
+            "description": "New share slug. Lowercase letters, digits, and single hyphens, 3-64 chars. Reserved words (api, admin, etc.) are rejected.",
+            "example": "tundes-30th",
+            "maxLength": 64,
+            "minLength": 3,
+            "pattern": "SHARE_SLUG_REGEX",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug"
+        ],
+        "type": "object"
+      },
+      "ReorderSegmentsDto": {
+        "properties": {
+          "orderedIds": {
+            "description": "Segment IDs in their new order. Must list every segment of the event exactly once.",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "orderedIds"
+        ],
+        "type": "object"
+      },
+      "ReviewerSummaryDto": {
+        "properties": {
+          "id": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          },
+          "image": {
+            "example": null,
+            "nullable": true,
+            "type": "string"
+          },
+          "name": {
+            "example": "Bola Adesina",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "ReviewGivenDto": {
+        "properties": {
+          "comment": {
+            "description": "Free-form comment. Surfaced only when the viewer is the reviewee or has admin rights on the event — null otherwise.",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-25T10:14:00.000Z",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventRefDto"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "example": 5,
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          },
+          "revieweeId": {
+            "example": "usr_creator...",
+            "type": "string"
+          },
+          "reviewerId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "reviewerId",
+          "revieweeId",
+          "rating",
+          "createdAt",
+          "event"
+        ],
+        "type": "object"
+      },
+      "ReviewReceivedDto": {
+        "properties": {
+          "comment": {
+            "description": "Free-form comment. Surfaced only when the viewer is the reviewee or has admin rights on the event — null otherwise.",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-06-25T10:14:00.000Z",
+            "type": "string"
+          },
+          "event": {
+            "$ref": "#/components/schemas/EventRefDto"
+          },
+          "eventId": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "example": 5,
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          },
+          "revieweeId": {
+            "example": "usr_creator...",
+            "type": "string"
+          },
+          "reviewer": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ReviewerSummaryDto"
+              }
+            ],
+            "nullable": true
+          },
+          "reviewerId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "reviewerId",
+          "revieweeId",
+          "rating",
+          "createdAt",
+          "event"
+        ],
+        "type": "object"
+      },
+      "RsvpQuestionDto": {
+        "properties": {
+          "id": {
+            "example": "dietary",
+            "type": "string"
+          },
+          "label": {
+            "example": "Any dietary requirements?",
+            "type": "string"
+          },
+          "options": {
+            "description": "Present when type=select; the choices an invitee can pick.",
+            "example": [
+              "None",
+              "Vegetarian",
+              "Vegan",
+              "Halal"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "required": {
+            "example": true,
+            "type": "boolean"
+          },
+          "type": {
+            "enum": [
+              "text",
+              "select"
+            ],
+            "example": "select",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "type",
+          "required"
+        ],
+        "type": "object"
+      },
+      "RsvpQuestionsResponseDto": {
+        "properties": {
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/RsvpQuestionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "type": "object"
+      },
+      "ScheduledReminderDto": {
+        "properties": {
+          "error": {
+            "description": "Failure detail; populated when status=failed.",
+            "example": "Resend API timeout",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventId": {
+            "example": "4f4f1f6a-a7ed-4d8a-9a44-5bb2a3ce4a3e",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+            "format": "uuid",
+            "type": "string"
+          },
+          "inviteeId": {
+            "description": "Null for event-wide reminders (e.g. event_tomorrow broadcasts).",
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "nullable": true,
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "rsvp_nudge",
+              "event_tomorrow"
+            ],
+            "example": "rsvp_nudge",
+            "type": "string"
+          },
+          "runAt": {
+            "example": "2026-06-21T09:00:00.000Z",
+            "type": "string"
+          },
+          "sentAt": {
+            "description": "When the reminder actually fired; null until status=sent.",
+            "example": "2026-06-21T09:00:12.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "scheduled",
+              "sent",
+              "cancelled",
+              "failed",
+              "skipped"
+            ],
+            "example": "scheduled",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "kind",
+          "runAt",
+          "status"
+        ],
+        "type": "object"
+      },
+      "SegmentDetailResponseDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "description": {
+            "example": "Outdoor garden venue within 30 minutes of the church, capacity 120+.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "e3b0c442-98fc-4e1b-9c2b-9d3a7c2f1a4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lockedAt": {
+            "example": "2026-05-28T14:33:12.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "lockedById": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "nullable": true,
+            "type": "string"
+          },
+          "lockedValue": {
+            "additionalProperties": true,
+            "description": "Final decided payload once the segment is locked. Shape varies by segmentType (e.g. a venue payload has { name, address, capacity }).",
+            "example": {
+              "address": "12 Marina Way, Lagos",
+              "capacity": 150,
+              "name": "Garden Court Hotel"
+            },
+            "nullable": true,
+            "type": "object"
+          },
+          "position": {
+            "description": "Zero-based ordering within the event.",
+            "example": 2,
+            "type": "number"
+          },
+          "proposals": {
+            "items": {
+              "$ref": "#/components/schemas/EmbeddedProposalDto"
+            },
+            "type": "array"
+          },
+          "segmentType": {
+            "description": "Free-form short slug ('date_time' | 'venue' | 'budget' | 'agenda' | 'guest_list' | 'roles' | 'theme' | 'travel' | …). Drives the picker icon on the planning board.",
+            "example": "venue",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "seeded",
+              "open",
+              "proposed",
+              "objected",
+              "converging",
+              "single_remaining",
+              "locked"
+            ],
+            "example": "open",
+            "type": "string"
+          },
+          "title": {
+            "example": "Reception venue",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "segmentType",
+          "title",
+          "position",
+          "state",
+          "createdAt",
+          "updatedAt",
+          "proposals"
+        ],
+        "type": "object"
+      },
+      "SegmentResponseDto": {
+        "properties": {
+          "createdAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "description": {
+            "example": "Outdoor garden venue within 30 minutes of the church, capacity 120+.",
+            "nullable": true,
+            "type": "string"
+          },
+          "eventId": {
+            "example": "6bb69700-72eb-40a0-b37e-e6c0b8b004a9",
+            "format": "uuid",
+            "type": "string"
+          },
+          "id": {
+            "example": "e3b0c442-98fc-4e1b-9c2b-9d3a7c2f1a4d",
+            "format": "uuid",
+            "type": "string"
+          },
+          "lockedAt": {
+            "example": "2026-05-28T14:33:12.000Z",
+            "nullable": true,
+            "type": "string"
+          },
+          "lockedById": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "nullable": true,
+            "type": "string"
+          },
+          "lockedValue": {
+            "additionalProperties": true,
+            "description": "Final decided payload once the segment is locked. Shape varies by segmentType (e.g. a venue payload has { name, address, capacity }).",
+            "example": {
+              "address": "12 Marina Way, Lagos",
+              "capacity": 150,
+              "name": "Garden Court Hotel"
+            },
+            "nullable": true,
+            "type": "object"
+          },
+          "position": {
+            "description": "Zero-based ordering within the event.",
+            "example": 2,
+            "type": "number"
+          },
+          "segmentType": {
+            "description": "Free-form short slug ('date_time' | 'venue' | 'budget' | 'agenda' | 'guest_list' | 'roles' | 'theme' | 'travel' | …). Drives the picker icon on the planning board.",
+            "example": "venue",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "seeded",
+              "open",
+              "proposed",
+              "objected",
+              "converging",
+              "single_remaining",
+              "locked"
+            ],
+            "example": "open",
+            "type": "string"
+          },
+          "title": {
+            "example": "Reception venue",
+            "type": "string"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "eventId",
+          "segmentType",
+          "title",
+          "position",
+          "state",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "SegmentSuggestionCandidateDto": {
+        "properties": {
+          "notes": {
+            "example": "Outdoor garden with shaded marquee, capacity ~180. Public path nearby — lock 3-4pm Saturday to keep traffic light.",
+            "type": "string"
+          },
+          "reason": {
+            "example": "Matches your 24 Jun date (dry-season weekend) and the outdoor steer.",
+            "type": "string"
+          },
+          "summary": {
+            "example": "Garden venue at Lekki Conservation Centre",
+            "type": "string"
+          },
+          "typed": {
+            "additionalProperties": true,
+            "description": "Optional typed payload for segments where structured data fits.",
+            "example": {
+              "address": "Lekki, Lagos",
+              "capacity": 180,
+              "indoor": false
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "summary",
+          "notes",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "SegmentSuggestionsResponseDto": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/SegmentSuggestionCandidateDto"
+            },
+            "type": "array"
+          },
+          "costCents": {
+            "description": "Cost of *this* call in USD cents. Surface a tiny '≈X¢' badge so the admin can see what each suggestion run spent.",
+            "example": 4,
+            "type": "number"
+          }
+        },
+        "required": [
+          "candidates",
+          "costCents"
+        ],
+        "type": "object"
+      },
+      "SendInvitationResultDto": {
+        "properties": {
+          "email": {
+            "example": "tunde@example.com",
+            "type": "string"
+          },
+          "error": {
+            "description": "Present when sent=false; the underlying delivery error message.",
+            "example": "Resend API error: invalid recipient",
+            "type": "string"
+          },
+          "sent": {
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "email",
+          "sent"
+        ],
+        "type": "object"
+      },
+      "SendInvitationsResponseDto": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SendInvitationResultDto"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SendInvitationsSummaryDto"
+          }
+        },
+        "required": [
+          "results",
+          "summary"
+        ],
+        "type": "object"
+      },
+      "SendInvitationsSummaryDto": {
+        "properties": {
+          "attempted": {
+            "example": 12,
+            "type": "number"
+          },
+          "failed": {
+            "example": 1,
+            "type": "number"
+          },
+          "succeeded": {
+            "example": 11,
+            "type": "number"
+          }
+        },
+        "required": [
+          "attempted",
+          "succeeded",
+          "failed"
+        ],
+        "type": "object"
+      },
+      "SetRsvpQuestionsDto": {
+        "properties": {
+          "questions": {
+            "description": "Full replacement of the question set. Pass [] to remove all questions. Server validates 'select' questions have ≥1 option and tier cap (Occasion=3, Production=10, Marquee=∞).",
+            "items": {
+              "$ref": "#/components/schemas/RsvpQuestionDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "questions"
+        ],
+        "type": "object"
+      },
+      "SubmitReviewDto": {
+        "properties": {
+          "comment": {
+            "description": "Optional free-form comment. Only visible to the event creator (visibility rule per Phase 7 plan — public surface shows the aggregate only).",
+            "example": "Tunde organised every segment crisply — the proposal-objection rhythm meant nobody felt steamrolled.",
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "rating": {
+            "description": "1-5 stars.",
+            "example": 5,
+            "maximum": 5,
+            "minimum": 1,
+            "type": "number"
+          }
+        },
+        "required": [
+          "rating"
+        ],
+        "type": "object"
+      },
+      "SubmitRsvpDto": {
+        "properties": {
+          "customAnswers": {
+            "description": "Reserved for Phase 5c custom RSVP questions.",
+            "type": "object"
+          },
+          "name": {
+            "description": "Optional name correction — used when an invitee was added by email only.",
+            "maxLength": 120,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "yes",
+              "no",
+              "maybe"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "type": "object"
+      },
+      "SuggestProposalsDto": {
+        "properties": {
+          "steer": {
+            "description": "Optional free-form steer for the suggestions — e.g. \"focus on Lagos vendors\", \"outdoor only\", \"stay under ₦300k\".",
+            "example": "focus on outdoor venues",
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "TierDto": {
+        "properties": {
+          "amountMinor": {
+            "description": "Price in kobo (NGN minor unit) as a string — amounts are BigInt server-side and JSON-serialized as strings so values above 2^53 stay precise.",
+            "example": "3900000",
+            "type": "string"
+          },
+          "currency": {
+            "example": "NGN",
+            "type": "string"
+          },
+          "displayName": {
+            "example": "Occasion",
+            "type": "string"
+          },
+          "featureTemplate": {
+            "additionalProperties": true,
+            "description": "Default feature bag copied onto event.features at provisioning. Shape: { sharing: {...}, branding: {...}, invitees: {...}, … }.",
+            "example": {
+              "branding": {
+                "customSharePage": false
+              },
+              "invitees": {
+                "customQuestions": 5,
+                "maxInvitees": 200
+              },
+              "sharing": {
+                "customSlug": true,
+                "emailReminders": true
+              }
+            },
+            "type": "object"
+          },
+          "slug": {
+            "enum": [
+              "free",
+              "gathering",
+              "occasion",
+              "production",
+              "marquee"
+            ],
+            "example": "occasion",
+            "type": "string"
+          },
+          "sortOrder": {
+            "example": 10,
+            "type": "number"
+          }
+        },
+        "required": [
+          "slug",
+          "displayName",
+          "amountMinor",
+          "currency",
+          "sortOrder",
+          "featureTemplate"
+        ],
+        "type": "object"
+      },
+      "UnlockSegmentDto": {
+        "properties": {
+          "reason": {
+            "description": "Optional human-readable reason for unlocking. Strongly encouraged for audit clarity.",
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UnpublishEventDto": {
+        "properties": {
+          "reason": {
+            "maxLength": 500,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateBrandDto": {
+        "properties": {
+          "accentColor": {
+            "description": "Accent color for highlights, links, RSVP CTA.",
+            "example": "#F2B33E",
+            "nullable": true,
+            "type": "string"
+          },
+          "color": {
+            "description": "Primary brand color. Hex with leading #.",
+            "example": "#4A2B7E",
+            "nullable": true,
+            "type": "string"
+          },
+          "textColor": {
+            "description": "Text color for content sitting on top of the brand color.",
+            "example": "#1F1B2B",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateEventDraftDto": {
+        "properties": {
+          "description": {
+            "maxLength": 2000,
+            "type": "string"
+          },
+          "eventType": {
+            "enum": [
+              "wedding",
+              "birthday",
+              "offsite",
+              "hangout",
+              "conference",
+              "reunion",
+              "fundraiser",
+              "other"
+            ],
+            "example": "wedding",
+            "type": "string"
+          },
+          "scheduledDate": {
+            "description": "Provisional event date; can change while planning.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "title": {
+            "example": "Wedding planning — Tunde & Bola",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateMemberRoleDto": {
+        "properties": {
+          "role": {
+            "enum": [
+              "admin",
+              "contributor",
+              "observer"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "UpdateProfileDto": {
+        "properties": {
+          "city": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "displayName": {
+            "maxLength": 120,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 32,
+            "type": "string"
+          },
+          "ratingVisible": {
+            "description": "When false, public surfaces (share page) omit your rating entirely. Default true — opt-out, not opt-in, since the rating is the trust signal.",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "UpdateSegmentDto": {
+        "properties": {
+          "description": {
+            "description": "Pass empty string to clear.",
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "segmentType": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserProfileDto": {
+        "properties": {
+          "city": {
+            "example": "Lagos",
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "displayName": {
+            "example": "Tunde Bakare",
+            "nullable": true,
+            "type": "string"
+          },
+          "phone": {
+            "example": "+2348012345678",
+            "nullable": true,
+            "type": "string"
+          },
+          "ratingAvg": {
+            "description": "Average rating as a decimal string (Prisma Decimal serializes to string).",
+            "example": "4.75",
+            "nullable": true,
+            "type": "string"
+          },
+          "ratingCount": {
+            "example": 12,
+            "type": "number"
+          },
+          "ratingVisible": {
+            "example": true,
+            "type": "boolean"
+          },
+          "updatedAt": {
+            "example": "2026-05-26T08:12:00.000Z",
+            "type": "string"
+          },
+          "userId": {
+            "example": "usr_2N9k8x...",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "ratingCount",
+          "ratingVisible",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "UserRefDto": {
+        "properties": {
+          "email": {
+            "example": "amaka@example.com",
+            "nullable": true,
+            "type": "string"
+          },
+          "id": {
+            "example": "usr_2N9k8x4QyT3pA7c1bWv0eR",
+            "type": "string"
+          },
+          "name": {
+            "example": "Amaka Okonkwo",
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      },
+      "VibePackResponseDto": {
+        "properties": {
+          "brandApplied": {
+            "description": "Whether event.brand color slots were also updated. True except in edge cases (e.g. parsing failed mid-write).",
+            "example": true,
+            "type": "boolean"
+          },
+          "costCents": {
+            "description": "Cost of this call in USD cents.",
+            "example": 9,
+            "type": "number"
+          },
+          "decorations": {
+            "example": [
+              "String lights overhead in concentric loops",
+              "Long shared table with mismatched candles"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "emoji": {
+            "example": "🌅",
+            "type": "string"
+          },
+          "music": {
+            "example": [
+              "Afrobeats — Wizkid (Essence)",
+              "Highlife — Asa (Eye Adaba)"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "palette": {
+            "description": "Exactly 3 hex colors: [dominant, accent, text-on-dominant]. Auto-written to event.brand.",
+            "example": [
+              "#4A2B7E",
+              "#F2B33E",
+              "#FAF7F2"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "themeName": {
+            "example": "Garden Twilight",
+            "type": "string"
+          }
+        },
+        "required": [
+          "themeName",
+          "palette",
+          "decorations",
+          "music",
+          "emoji",
+          "costCents",
+          "brandApplied"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearer": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      },
+      "cookie": {
+        "in": "cookie",
+        "name": "better-auth.session_token",
+        "type": "apiKey"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "Event Planning Decision Making Assistant. Spec frozen per Phase 5.5 — bump `info.version` (major for breaking, minor for additive) on every committed change.",
+    "title": "EPDEMA API",
+    "version": "1.0.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/addons": {
+      "get": {
+        "operationId": "tiers_listAddons",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AddonDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List active à-la-carte add-ons."
+          }
+        },
+        "summary": "List active add-ons",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/auth-providers": {
+      "get": {
+        "operationId": "auth_providers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "properties": {
+                    "apple": {
+                      "example": false,
+                      "type": "boolean"
+                    },
+                    "google": {
+                      "example": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "List enabled social-auth providers",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/copilot/draft-event": {
+      "post": {
+        "operationId": "copilot_draftEvent",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftEventDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CopilotDraftResponseDto"
+                }
+              }
+            },
+            "description": "AI-generated event scaffold: { title, eventType, scheduledDate?, description?, segments: [{ segmentType, title, description }], costCents }. The web wizard pre-fills its form from this; the user can edit anything before final create."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Draft an event scaffold from a free-form description (Production+ Opus)",
+        "tags": [
+          "copilot"
+        ]
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Events created by the authenticated user or where they are a planning member."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the caller's events",
+        "tags": [
+          "events"
+        ]
+      },
+      "post": {
+        "operationId": "events_createDraft",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateEventDraftDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Create a draft event. No payment yet — tier is chosen later."
+          },
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a draft event",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{eventId}/brand": {
+      "get": {
+        "operationId": "brand_get",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Read the event's brand (admin only). Returns null fields when nothing has been configured yet — clients should fall back to default chrome."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read the event brand (admin)",
+        "tags": [
+          "brand"
+        ]
+      },
+      "put": {
+        "operationId": "brand_updateColors",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateBrandDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Update brand colors (admin only, Production+ tier gated). Pass each color as a hex string with leading \"#\". Omit a field to leave it unchanged; pass null to clear it."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update brand colors (admin)",
+        "tags": [
+          "brand"
+        ]
+      }
+    },
+    "/events/{eventId}/brand/cover": {
+      "delete": {
+        "operationId": "brand_removeCover",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Remove the cover image (admin)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove the cover image (admin)",
+        "tags": [
+          "brand"
+        ]
+      },
+      "post": {
+        "operationId": "brand_uploadCover",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Upload a cover image (admin, Production+). PNG / JPEG / WebP, max 6 MB."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a cover image (admin)",
+        "tags": [
+          "brand"
+        ]
+      }
+    },
+    "/events/{eventId}/brand/logo": {
+      "delete": {
+        "operationId": "brand_removeLogo",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Remove the logo (admin)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove the logo (admin)",
+        "tags": [
+          "brand"
+        ]
+      },
+      "post": {
+        "operationId": "brand_uploadLogo",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BrandResponseDto"
+                }
+              }
+            },
+            "description": "Upload a logo (admin, Production+). PNG / JPEG / WebP / SVG, max 2 MB. The previous logo is deleted from storage after the new one persists."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Upload a logo (admin)",
+        "tags": [
+          "brand"
+        ]
+      }
+    },
+    "/events/{eventId}/holiday-scan": {
+      "get": {
+        "operationId": "holidayScanner_latest",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayScanResponseDto"
+                }
+              }
+            },
+            "description": "Returns the most recent persisted scan (warnings + scannedDate) so the event detail page can surface them without re-rolling Claude. When nothing's been scanned yet, returns `{ warnings: [], scannedDate: '', costCents: 0 }`."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read the most recent holiday-scan result (no new model call)",
+        "tags": [
+          "holiday-scanner"
+        ]
+      },
+      "post": {
+        "operationId": "holidayScanner_scan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HolidayScanResponseDto"
+                }
+              }
+            },
+            "description": "Generates a fresh scan against the current event.scheduledDate. Returns 403 when the event doesn't have the `holiday_scanner` add-on; 409 when a scan already exists for this date (re-run after changing the date, or buy the add-on again to re-roll)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Run the holiday & conflict scan for an event (admin, add-on required)",
+        "tags": [
+          "holiday-scanner"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees": {
+      "get": {
+        "operationId": "invitees_list",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InviteeAdminDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List all invitees for the event (admin only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List invitees for an event",
+        "tags": [
+          "invitees"
+        ]
+      },
+      "post": {
+        "operationId": "invitees_addOne",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddInviteeDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddInviteesResponseDto"
+                }
+              }
+            },
+            "description": "Add a single invitee by email. Returns a one-item result array so the admin sees the same shape as the bulk endpoint."
+          },
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a single invitee",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/{inviteeId}": {
+      "delete": {
+        "operationId": "invitees_remove",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Invitee UUID.",
+            "in": "path",
+            "name": "inviteeId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove an invitee (admin only)."
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove an invitee",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/bulk": {
+      "post": {
+        "operationId": "invitees_addBulk",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BulkAddInviteesDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddInviteesResponseDto"
+                }
+              }
+            },
+            "description": "Add up to 500 invitees in one go. Returns a per-row result list ('created' | 'updated' | 'skipped_existing' | 'invalid') so the admin can see exactly what happened to each entry."
+          },
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bulk-add invitees",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/counts": {
+      "get": {
+        "operationId": "invitees_counts",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteeStatusCountsDto"
+                }
+              }
+            },
+            "description": "RSVP status breakdown — { pending, yes, no, maybe, total }."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "RSVP status breakdown",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/questions": {
+      "get": {
+        "operationId": "invitees_getQuestions",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RsvpQuestionsResponseDto"
+                }
+              }
+            },
+            "description": "Read the event's custom RSVP question set (admin only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read the event's custom RSVP question set",
+        "tags": [
+          "invitees"
+        ]
+      },
+      "put": {
+        "operationId": "invitees_setQuestions",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetRsvpQuestionsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RsvpQuestionsResponseDto"
+                }
+              }
+            },
+            "description": "Replace the event's custom RSVP question set (admin only, Occasion+ gated, tier cap enforced). Pass [] to remove all questions."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace the event's custom RSVP question set",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/reminders": {
+      "get": {
+        "operationId": "invitees_listReminders",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RemindersListResponseDto"
+                }
+              }
+            },
+            "description": "List scheduled + recent reminders for this event (admin only). Used by the admin invitees page to show 'N reminders scheduled' with status."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List scheduled + recent reminders",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/reminders/cancel-all": {
+      "post": {
+        "operationId": "invitees_cancelAllReminders",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CancelRemindersResponseDto"
+                }
+              }
+            },
+            "description": "Cancel every still-scheduled reminder for this event (admin only). History rows stay visible with status=\"cancelled\"."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cancel all scheduled reminders",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/invitees/send-invitations": {
+      "post": {
+        "operationId": "invitees_sendInvitations",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "all",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SendInvitationsResponseDto"
+                }
+              }
+            },
+            "description": "Send the \"you're invited\" email to invitees. By default only those who have not yet been emailed; pass ?all=true to re-send to everyone."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Send invitation emails",
+        "tags": [
+          "invitees"
+        ]
+      }
+    },
+    "/events/{eventId}/members": {
+      "get": {
+        "operationId": "members_list",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningMemberDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List planning members of the event."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List planning members of an event",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/events/{eventId}/members/{memberId}": {
+      "delete": {
+        "operationId": "members_remove",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Planning-member row UUID.",
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Remove a member from the event (admin only). No body."
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a planning member (admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/events/{eventId}/members/{memberId}/role": {
+      "patch": {
+        "operationId": "members_updateRole",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Planning-member row UUID.",
+            "in": "path",
+            "name": "memberId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanningMemberDto"
+                }
+              }
+            },
+            "description": "Change a member's role (admin only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change a planning member's role (admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/events/{eventId}/members/invitations": {
+      "get": {
+        "operationId": "members_listInvitations",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanningInvitationDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List pending invitations for the event (admin only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List pending planning invitations (admin)",
+        "tags": [
+          "members"
+        ]
+      },
+      "post": {
+        "operationId": "members_invite",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InviteMemberDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InviteMemberResponseDto"
+                }
+              }
+            },
+            "description": "Invite an email to the event (admin only). Response includes acceptUrl so admins can share manually when email delivery is unreliable."
+          },
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Invite an email to the planning team (admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/events/{eventId}/members/invitations/{invitationId}": {
+      "delete": {
+        "operationId": "members_revokeInvitation",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Planning-invitation row UUID.",
+            "in": "path",
+            "name": "invitationId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Revoke a pending invitation (admin only). No body."
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Revoke a pending planning invitation (admin)",
+        "tags": [
+          "members"
+        ]
+      }
+    },
+    "/events/{eventId}/reviews": {
+      "get": {
+        "operationId": "reviews_listForEvent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventReviewsListResponseDto"
+                }
+              }
+            },
+            "description": "Admin or creator gets every review with reviewer + comment hydrated. A non-privileged planning member sees only their own row. Non-members get 403 from the assertMember guard."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews on this event (admin/creator see all; member sees own)",
+        "tags": [
+          "reviews"
+        ]
+      },
+      "post": {
+        "operationId": "reviews_submit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitReviewDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventReviewDto"
+                }
+              }
+            },
+            "description": "Submit one review per planning member per event. Event must be in state `past`. Reviewer cannot review their own event. 409 on a second submission for the same (reviewer, event). Atomic with the rolling average update on the creator's `user_profile.ratingAvg`."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit a 1-5 review of the event creator (planning member only)",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/events/{eventId}/segments": {
+      "get": {
+        "operationId": "segments_list",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SegmentResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List segments for an event (ordered by position)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List segments for an event",
+        "tags": [
+          "segments"
+        ]
+      },
+      "post": {
+        "operationId": "segments_create",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSegmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentResponseDto"
+                }
+              }
+            },
+            "description": "Add a custom segment (admin only). Respects tier maxSegments cap."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add a custom segment (admin)",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/segments/{segmentId}": {
+      "delete": {
+        "operationId": "segments_delete",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Delete a segment (admin only). Refused if the segment is locked or has live proposals. Returns 204 No Content on success."
+          },
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a segment (admin)",
+        "tags": [
+          "segments"
+        ]
+      },
+      "get": {
+        "operationId": "segments_detail",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentDetailResponseDto"
+                }
+              }
+            },
+            "description": "Segment detail with live proposals + objections embedded. One call for the segment-detail page."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get segment detail with proposals",
+        "tags": [
+          "segments"
+        ]
+      },
+      "patch": {
+        "operationId": "segments_update",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSegmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentResponseDto"
+                }
+              }
+            },
+            "description": "Rename or edit a segment (admin only). Works on locked segments too."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename or edit a segment (admin)",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/segments/{segmentId}/lock": {
+      "post": {
+        "operationId": "segments_lock",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockSegmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentDetailResponseDto"
+                }
+              }
+            },
+            "description": "Lock the segment with the chosen proposal as the winner. Atomic state transition under serializable txn + per-segment advisory lock."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lock a segment with a winning proposal",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/segments/{segmentId}/suggestions": {
+      "post": {
+        "operationId": "segments_suggestProposals",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SuggestProposalsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentSuggestionsResponseDto"
+                }
+              }
+            },
+            "description": "Returns 3-5 AI-generated proposal candidates. Each carries a `reason` explaining why it fits THIS event. Admin clicks one to instantiate as a real Proposal via the existing POST /proposals endpoint. Tier-gated on `features.ai.perSegmentSuggestions` (Occasion+); 403 below that."
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Suggest 3-5 proposal candidates for a segment (admin, Occasion+)",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/segments/{segmentId}/unlock": {
+      "post": {
+        "operationId": "segments_unlock",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnlockSegmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SegmentDetailResponseDto"
+                }
+              }
+            },
+            "description": "Unlock a locked segment. Restores all proposals to live state; clears lockedValue."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Unlock a locked segment",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/segments/reorder": {
+      "post": {
+        "operationId": "segments_reorder",
+        "parameters": [
+          {
+            "description": "Parent event UUID.",
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderSegmentsDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SegmentResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Reorder all segments in one atomic transaction (admin only). Must list every segment ID exactly once."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reorder all segments (admin)",
+        "tags": [
+          "segments"
+        ]
+      }
+    },
+    "/events/{eventId}/vibe-pack": {
+      "post": {
+        "operationId": "vibePack_generate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "eventId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VibePackResponseDto"
+                }
+              }
+            },
+            "description": "Generates the one-shot vibe pack: theme name, palette, decoration + music ideas, emoji. Auto-applies the palette to event.brand. 403 when the event doesn't have the `ai_vibe_pack` add-on; 409 when already generated."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Generate the vibe pack for an event (admin, add-on required)",
+        "tags": [
+          "vibe-pack"
+        ]
+      }
+    },
+    "/events/{id}": {
+      "get": {
+        "operationId": "events_get",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Get an event the authenticated user is a planning member of (or owns)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get one event",
+        "tags": [
+          "events"
+        ]
+      },
+      "patch": {
+        "operationId": "events_updateDraft",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateEventDraftDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Update a draft event (title, type, date, description)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a draft event",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{id}/mark-past": {
+      "post": {
+        "operationId": "events_markPast",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Phase 7·A — admin-only manual transition from published → past. Required before planning members can submit reviews. Idempotent on already-past events. 400 when state is not published, or when scheduledDate is null/future. In 7·D, a worker will fire this automatically once the scheduled date passes."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Flip a published event to past state (admin)",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{id}/publish": {
+      "post": {
+        "operationId": "events_publish",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishEventDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Publish the event (admin only). Validates all blockers; generates a share slug; broadcasts event.changed."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Publish the event (admin)",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{id}/publish-readiness": {
+      "get": {
+        "operationId": "events_publishReadiness",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishReadinessResponseDto"
+                }
+              }
+            },
+            "description": "Which blockers remain (unlocked segments, missing date, odd voting count). Used by the pre-publish modal."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Compute publish-readiness",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{id}/share-slug": {
+      "patch": {
+        "operationId": "events_renameShareSlug",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenameShareSlugDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Rename the public share slug (admin only, Occasion-tier feature). Format: lowercase letters/digits/single hyphens, 3-64 chars. Reserved words and taken slugs return 409."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rename the public share slug (admin)",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/events/{id}/unpublish": {
+      "post": {
+        "operationId": "events_unpublish",
+        "parameters": [
+          {
+            "description": "Event UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnpublishEventDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponseDto"
+                }
+              }
+            },
+            "description": "Roll back to planning state (admin only). Preserves the share slug so re-publishing keeps the same URL."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Roll back to planning (admin)",
+        "tags": [
+          "events"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_check",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto"
+                }
+              }
+            },
+            "description": "Liveness + dependency check (Postgres + Redis)."
+          }
+        },
+        "summary": "Liveness + dependency check",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/invitations/{token}": {
+      "get": {
+        "operationId": "invitations_lookup",
+        "parameters": [
+          {
+            "description": "Opaque invitation token (64-char hex) emailed to the recipient and returned in acceptUrl.",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "example": "3f9c1e7b8a2d4f5e6c0b9a1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicInvitationDto"
+                }
+              }
+            },
+            "description": "Public peek at an invitation. Returns event title, inviter, expiry — no sensitive data."
+          }
+        },
+        "summary": "Public peek at a planning invitation (unauthenticated)",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/invitations/{token}/accept": {
+      "post": {
+        "operationId": "invitations_accept",
+        "parameters": [
+          {
+            "description": "Opaque invitation token (64-char hex) emailed to the recipient and returned in acceptUrl.",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "example": "3f9c1e7b8a2d4f5e6c0b9a1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInvitationResponseDto"
+                }
+              }
+            },
+            "description": "Accept an invitation. Requires signed-in user whose email matches."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Accept a planning invitation (authenticated)",
+        "tags": [
+          "invitations"
+        ]
+      }
+    },
+    "/objections/{objectionId}/withdraw": {
+      "post": {
+        "operationId": "objections_withdraw",
+        "parameters": [
+          {
+            "description": "Objection UUID.",
+            "in": "path",
+            "name": "objectionId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectionResponseDto"
+                }
+              }
+            },
+            "description": "Withdraw an objection (objector only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw an objection (objector)",
+        "tags": [
+          "objections"
+        ]
+      }
+    },
+    "/payments/{id}": {
+      "get": {
+        "operationId": "payments_get",
+        "parameters": [
+          {
+            "description": "Payment UUID.",
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "description": "When \"true\" or \"1\", calls Paystack verify if the payment is still pending. Use on the return page.",
+            "in": "query",
+            "name": "reconcile",
+            "required": false,
+            "schema": {
+              "example": "true",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Get a payment owned by the authenticated user."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get a payment by ID",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/by-reference/{reference}": {
+      "get": {
+        "operationId": "payments_getByReference",
+        "parameters": [
+          {
+            "description": "Paystack reference echoed back on the return-page redirect.",
+            "in": "path",
+            "name": "reference",
+            "required": true,
+            "schema": {
+              "example": "ref_3f8c2e1a4b9d",
+              "type": "string"
+            }
+          },
+          {
+            "description": "When \"true\" or \"1\", calls Paystack verify if the payment is still pending. Use on the return page.",
+            "in": "query",
+            "name": "reconcile",
+            "required": false,
+            "schema": {
+              "example": "true",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto"
+                }
+              }
+            },
+            "description": "Look up a payment by Paystack reference (used by the return page since Paystack only echoes `reference` in the redirect)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Look up a payment by Paystack reference",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/payments/intents": {
+      "post": {
+        "operationId": "payments_createIntent",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "idempotency-key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "UUID v4 generated client-side.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentIntentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentIntentResponseDto"
+                }
+              }
+            },
+            "description": "Created (or replayed) a payment intent. Returns a Paystack checkout URL for paid tiers; free tier short-circuits to status=success with no URL."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create (or replay) a payment intent",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/proposals/{proposalId}/objections": {
+      "get": {
+        "operationId": "objections_list",
+        "parameters": [
+          {
+            "description": "Parent proposal UUID.",
+            "in": "path",
+            "name": "proposalId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ObjectionResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List live objections against a proposal."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List live objections on a proposal",
+        "tags": [
+          "objections"
+        ]
+      },
+      "post": {
+        "operationId": "objections_create",
+        "parameters": [
+          {
+            "description": "Parent proposal UUID.",
+            "in": "path",
+            "name": "proposalId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateObjectionDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectionResponseDto"
+                }
+              }
+            },
+            "description": "Raise an objection against a proposal."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Raise an objection on a proposal",
+        "tags": [
+          "objections"
+        ]
+      }
+    },
+    "/proposals/{proposalId}/withdraw": {
+      "post": {
+        "operationId": "proposals_withdraw",
+        "parameters": [
+          {
+            "description": "Proposal UUID.",
+            "in": "path",
+            "name": "proposalId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalResponseDto"
+                }
+              }
+            },
+            "description": "Withdraw a proposal (proposer only)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw a proposal (proposer)",
+        "tags": [
+          "proposals"
+        ]
+      }
+    },
+    "/rsvp/{token}": {
+      "get": {
+        "operationId": "rsvp_lookup",
+        "parameters": [
+          {
+            "description": "RSVP token from the invitation URL — base64url of 24 random bytes (~32 chars).",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "example": "aBcD1234EFgh5678IJklMNop9012QrSt",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRsvpResponseDto"
+                }
+              }
+            },
+            "description": "Look up an invitation by RSVP token. Returns event essentials, the invitee's own status, and (Production+ tier) the event brand so the RSVP page can render in the organizer's theme."
+          }
+        },
+        "summary": "Look up an invitation by token",
+        "tags": [
+          "rsvp"
+        ]
+      },
+      "post": {
+        "operationId": "rsvp_submit",
+        "parameters": [
+          {
+            "description": "RSVP token from the invitation URL — base64url of 24 random bytes (~32 chars).",
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "example": "aBcD1234EFgh5678IJklMNop9012QrSt",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRsvpDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicRsvpResponseDto"
+                }
+              }
+            },
+            "description": "Submit / update an RSVP (yes / no / maybe). Idempotent — the same invitee can change their mind any time before the event."
+          }
+        },
+        "summary": "Submit or update an RSVP",
+        "tags": [
+          "rsvp"
+        ]
+      }
+    },
+    "/segments/{segmentId}/proposals": {
+      "get": {
+        "operationId": "proposals_list",
+        "parameters": [
+          {
+            "description": "Parent segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProposalResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List live proposals for a segment."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List live proposals on a segment",
+        "tags": [
+          "proposals"
+        ]
+      },
+      "post": {
+        "operationId": "proposals_create",
+        "parameters": [
+          {
+            "description": "Parent segment UUID.",
+            "in": "path",
+            "name": "segmentId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProposalDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalResponseDto"
+                }
+              }
+            },
+            "description": "Create a proposal on a segment."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a proposal on a segment",
+        "tags": [
+          "proposals"
+        ]
+      }
+    },
+    "/share/{slug}": {
+      "get": {
+        "operationId": "share_getBySlug",
+        "parameters": [
+          {
+            "description": "Public share slug (lowercase letters/digits/single hyphens, 3-64 chars).",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "example": "tunde-bola",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicShareResponseDto"
+                }
+              }
+            },
+            "description": "Public event details — title, date, decided segments, creator name, and (Production+ tier) the event brand. No PII."
+          }
+        },
+        "summary": "Get the public share page for an event",
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/share/{slug}/calendar.ics": {
+      "get": {
+        "operationId": "share_downloadCalendar",
+        "parameters": [
+          {
+            "description": "Public share slug (lowercase letters/digits/single hyphens, 3-64 chars).",
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "example": "tunde-bola",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/calendar": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "iCalendar (RFC 5545) file with a single VEVENT for the scheduled date. Returns 404 (text/plain) when the event has no scheduled date yet."
+          }
+        },
+        "summary": "Download the event as an .ics calendar file",
+        "tags": [
+          "share"
+        ]
+      }
+    },
+    "/tiers": {
+      "get": {
+        "operationId": "tiers_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TierDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "List active tiers (Free → Marquee) with prices in kobo."
+          }
+        },
+        "summary": "List active tiers",
+        "tags": [
+          "catalog"
+        ]
+      }
+    },
+    "/users/me": {
+      "get": {
+        "operationId": "users_me",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponseDto"
+                }
+              }
+            },
+            "description": "Authenticated user + EPDEMA profile (auto-created on first call)."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get the authenticated user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/me/profile": {
+      "patch": {
+        "description": "Phase 7·F — partial update for the authenticated user's profile. Used\nby the settings UI to toggle `ratingVisible` (the headline gating for\npublic rating display) and edit display fields. Upsert semantics:\nabsent fields are not modified.",
+        "operationId": "users_updateProfile",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfileDto"
+                }
+              }
+            },
+            "description": "Returns the updated profile. Setting `ratingVisible=false` hides the creator’s rating from the public share page immediately — no cache invalidation needed, the share serializer re-reads on every request."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update the authenticated user’s profile (partial)",
+        "tags": [
+          "users"
+        ]
+      }
+    },
+    "/users/me/reviews-given": {
+      "get": {
+        "operationId": "reviews_listGivenByMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewGivenDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews I have submitted",
+        "tags": [
+          "reviews"
+        ]
+      }
+    },
+    "/users/me/reviews-received": {
+      "get": {
+        "operationId": "reviews_listReceivedByMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReviewReceivedDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews of my events (creator surface; comments included for self)",
+        "tags": [
+          "reviews"
+        ]
+      }
+    }
+  },
+  "servers": [],
+  "tags": []
+}

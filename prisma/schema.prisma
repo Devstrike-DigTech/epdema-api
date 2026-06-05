@@ -1,0 +1,651 @@
+// EPDEMA database schema
+//
+// Sections:
+//   1. Better Auth managed tables (do not hand-edit field names; map via @map)
+//   2. EPDEMA application tables
+//
+// Migration policy: additive-only between releases. To remove a field:
+//   a. mark @deprecated in code, stop reading
+//   b. release; verify
+//   c. drop the field in a follow-up migration
+//
+// See docs/04 §10 for the canonical data model.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// 1. Better Auth managed tables
+// ───────────────────────────────────────────────────────────────────────
+// These match Better Auth's expected schema. Field names follow Better Auth
+// conventions; do not rename without updating Better Auth's adapter config.
+
+model User {
+  id              String    @id
+  email           String    @unique
+  emailVerified   Boolean   @default(false)
+  name            String?
+  image           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  sessions        Session[]
+  accounts        Account[]
+  profile         UserProfile?
+
+  // Two-factor (Better Auth twoFactor plugin)
+  twoFactorEnabled Boolean  @default(false)
+
+  // Org membership (Better Auth organization plugin)
+  members         Member[]
+  invitations     Invitation[]
+
+  // EPDEMA app-level relations
+  events          Event[]
+  payments        Payment[]
+  refundsInitiated Refund[]   @relation("RefundInitiator")
+  auditLogs       AuditLog[]
+  segmentLocks    Segment[]   @relation("SegmentLockedBy")
+  proposals       Proposal[]
+  objections      Objection[]
+  planningMemberships PlanningMember[]
+  sentInvitations EventInvitation[] @relation("InvitationSender")
+  addedInvitees   EventInvitee[]    @relation("InviteeAdder")
+  reviewsGiven    EventReview[]     @relation("ReviewGiver")
+  reviewsReceived EventReview[]     @relation("ReviewReceiver")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Org context for active session (Better Auth organization plugin)
+  activeOrganizationId String?
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+// Better Auth organization plugin
+model Organization {
+  id          String       @id
+  name        String
+  slug        String?      @unique
+  logo        String?
+  metadata    String?
+  createdAt   DateTime     @default(now())
+
+  members     Member[]
+  invitations Invitation[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  organizationId String
+  userId         String
+  role           String
+  createdAt      DateTime     @default(now())
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  organizationId String
+  email          String
+  role           String?
+  status         String
+  expiresAt      DateTime
+  inviterId      String
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
+  @@map("invitation")
+}
+
+// Better Auth twoFactor plugin
+model TwoFactor {
+  id          String @id
+  userId      String @unique
+  secret      String
+  backupCodes String
+
+  @@map("twoFactor")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// 2. EPDEMA application tables
+// ───────────────────────────────────────────────────────────────────────
+
+model UserProfile {
+  userId        String   @id
+  displayName   String?
+  phone         String?
+  city          String?
+  ratingAvg     Decimal? @db.Decimal(3, 2)
+  ratingCount   Int      @default(0)
+  ratingVisible Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_profile")
+}
+
+/// Catalog of purchasable tiers. Seeded; not user-mutable.
+/// See docs/03 §2.
+model Tier {
+  slug            String   @id // 'free' | 'gathering' | 'occasion' | 'production' | 'marquee'
+  displayName     String
+  amountMinor     BigInt   // kobo (NGN minor unit)
+  currency        String   @db.Char(3) // 'NGN'
+  sortOrder       Int      @default(0)
+  featureTemplate Json     // default features copied onto event.features at provisioning
+  active          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  events          Event[]
+
+  @@map("tier")
+}
+
+/// Catalog of à-la-carte add-ons. Seeded; not user-mutable.
+/// See docs/03 §3.
+model Addon {
+  slug         String   @id
+  displayName  String
+  amountMinor  BigInt
+  currency     String   @db.Char(3)
+  featurePatch Json     // deep-merged onto event.features on purchase
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  eventAddons  EventAddon[]
+
+  @@map("addon")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 2 — Event creation + payments
+// ───────────────────────────────────────────────────────────────────────
+
+/// The central planning artefact. Lifecycle states:
+///   draft → payment_pending → provisioned → planning → locked → published → past → archived
+///   draft / payment_pending → refunded (terminal)
+/// See docs/03 §6.
+model Event {
+  id              String    @id @default(uuid()) @db.Uuid
+  creatorId       String
+  title           String    @db.VarChar(120)
+  eventType       String    @db.VarChar(32) // 'wedding' | 'birthday' | 'offsite' | 'hangout' | 'other'
+  description     String?   @db.Text
+  scheduledDate   DateTime? @db.Date
+  state           String    @default("draft") @db.VarChar(32)
+  tierSlug        String?
+  features        Json      @default("{}")
+  currency        String    @default("NGN") @db.Char(3)
+  shareSlug       String?   @unique @db.VarChar(64)
+  customSubdomain String?   @unique @db.VarChar(64)
+  /// Phase 5c — custom RSVP questions admin can add (Occasion+).
+  /// Shape: { questions: [{ id, label, type: 'text'|'select', options?: string[], required: boolean }] }
+  /// Stored as Json so editing the order or adding a question doesn't require a schema migration.
+  /// Null = use default no-question RSVP form.
+  rsvpQuestions   Json?
+  /// Phase 5c — custom branding for the public share + RSVP pages (Production+).
+  /// Shape: { color?, accentColor?, textColor?, logoKey?, coverImageKey? }
+  /// Keys (not URLs) are stored so they survive a storage-driver swap; the
+  /// adapter composes the public URL at read time.
+  brand           Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  provisionedAt   DateTime?
+  publishedAt     DateTime?
+  archivedAt      DateTime?
+
+  creator       User              @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  tier          Tier?             @relation(fields: [tierSlug], references: [slug])
+  payments      Payment[]
+  addons        EventAddon[]
+  segments      Segment[]
+  auditLogs     AuditLog[]
+  planningMembers PlanningMember[]
+  invitations   EventInvitation[]
+  invitees      EventInvitee[]
+  scheduledReminders ScheduledReminder[]
+  aiUsage       AiUsage[]
+  reviews       EventReview[]
+
+  @@index([creatorId])
+  @@index([state, scheduledDate])
+  @@map("event")
+}
+
+/// One row per add-on purchased for an event. A given add-on slug can only
+/// appear once per event (unique constraint), but features that stack
+/// (like Vendor Shortlist quota) handle stacking at the feature-merge layer.
+model EventAddon {
+  id        String   @id @default(uuid()) @db.Uuid
+  eventId   String   @db.Uuid
+  addonSlug String
+  paymentId String?  @db.Uuid
+  createdAt DateTime @default(now())
+
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  addon   Addon    @relation(fields: [addonSlug], references: [slug])
+  payment Payment? @relation(fields: [paymentId], references: [id])
+
+  @@unique([eventId, addonSlug])
+  @@index([eventId])
+  @@map("event_addon")
+}
+
+/// Every charge attempt against an event. See docs/03 §4 + §15.
+/// Idempotency: client-supplied UUID in Idempotency-Key header; duplicate
+/// calls with the same key return the existing row.
+model Payment {
+  id                 String    @id @default(uuid()) @db.Uuid
+  eventId            String    @db.Uuid
+  userId             String
+  purpose            String    @db.VarChar(32) // 'tier' | 'addon' | 'tier_upgrade' | 'planner_hire'
+  purposeRef         String?   @db.VarChar(64) // tier slug, addon slug, or planner id
+  amountMinor        BigInt
+  taxMinor           BigInt    @default(0) // VAT portion of amountMinor (NG: 7.5% inclusive)
+  currency           String    @db.Char(3)
+  processor          String    @db.VarChar(32) // 'paystack' | 'internal_free'
+  processorReference String?   @unique @db.VarChar(128)
+  status             String    @db.VarChar(32) // 'pending' | 'success' | 'failed' | 'reversed'
+  idempotencyKey     String    @unique @db.VarChar(128)
+  rawPayload         Json? // last processor payload, for audit
+  initiatedAt        DateTime  @default(now())
+  finalizedAt        DateTime?
+  failureReason      String?   @db.Text
+
+  event   Event        @relation(fields: [eventId], references: [id])
+  user    User         @relation(fields: [userId], references: [id])
+  refunds Refund[]
+  addons  EventAddon[]
+
+  @@index([eventId])
+  @@index([status, initiatedAt])
+  @@map("payment")
+}
+
+/// Partial or full refund against a Payment. See docs/03 §7.
+model Refund {
+  id                 String    @id @default(uuid()) @db.Uuid
+  paymentId          String    @db.Uuid
+  amountMinor        BigInt
+  reason             String    @db.Text
+  initiatedByUserId  String?
+  processorReference String?   @db.VarChar(128)
+  status             String    @db.VarChar(32) // 'pending' | 'success' | 'failed'
+  createdAt          DateTime  @default(now())
+  finalizedAt        DateTime?
+
+  payment         Payment @relation(fields: [paymentId], references: [id])
+  initiatedByUser User?   @relation("RefundInitiator", fields: [initiatedByUserId], references: [id])
+
+  @@index([paymentId])
+  @@map("refund")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 3 — Decision protocol (segments → proposals → objections → lock)
+// ───────────────────────────────────────────────────────────────────────
+
+/// A decision block inside an event (Venue, Date, Budget, Agenda, etc.).
+/// Lifecycle states match docs/02 §4 and docs/04 §10:
+///   seeded → open → proposed → objected → converging → single_remaining → locked
+/// Position is the visual ordering; (eventId, position) is unique to prevent
+/// races when two clients add a segment at the same time.
+model Segment {
+  id           String    @id @default(uuid()) @db.Uuid
+  eventId      String    @db.Uuid
+  segmentType  String    @db.VarChar(32) // 'date_time' | 'venue' | 'budget' | 'agenda' | ...
+  title        String    @db.VarChar(120)
+  description  String?   @db.Text
+  position     Int
+  state        String    @default("open") @db.VarChar(32)
+  lockedValue  Json?     // final decided payload — shape depends on segmentType
+  lockedAt     DateTime?
+  lockedById   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  lockedBy    User?       @relation("SegmentLockedBy", fields: [lockedById], references: [id])
+  proposals   Proposal[]
+
+  @@unique([eventId, position])
+  @@index([eventId, state])
+  @@map("segment")
+}
+
+/// A suggested answer to a segment. Multiple proposals coexist until
+/// convergence narrows them to a single survivor that becomes the locked value.
+model Proposal {
+  id            String    @id @default(uuid()) @db.Uuid
+  segmentId     String    @db.Uuid
+  proposedById  String
+  /// When true, the proposed-by user is hidden from non-admins — requires the
+  /// anonymous_proposals add-on on the event (features.room.anonymousProposals).
+  anonymous     Boolean   @default(false)
+  /// Shape varies by segment type; validated server-side per type.
+  payload       Json
+  state         String    @default("live") @db.VarChar(32) // 'live' | 'withdrawn' | 'eliminated' | 'winner'
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  segment     Segment     @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  proposedBy  User        @relation(fields: [proposedById], references: [id])
+  objections  Objection[]
+
+  @@index([segmentId, state])
+  @@map("proposal")
+}
+
+/// A member's objection to a specific proposal. While at least one live
+/// objection exists on a proposal, that proposal cannot converge.
+model Objection {
+  id          String   @id @default(uuid()) @db.Uuid
+  proposalId  String   @db.Uuid
+  raisedById  String
+  reason      String?  @db.Text
+  state       String   @default("live") @db.VarChar(32) // 'live' | 'withdrawn'
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  raisedBy User     @relation(fields: [raisedById], references: [id])
+
+  @@index([proposalId, state])
+  @@map("objection")
+}
+
+/// Append-only log of sensitive actions: segment.unlock, payment.create,
+/// payment.refund, member.role_change, etc. See docs/04 §13.
+/// Never updated, never deleted.
+model AuditLog {
+  id          String   @id @default(uuid()) @db.Uuid
+  actorUserId String?
+  eventId     String?  @db.Uuid
+  action      String   @db.VarChar(64)
+  details     Json?
+  ipAddress   String?  @db.Inet
+  userAgent   String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  actor User?  @relation(fields: [actorUserId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id])
+
+  @@index([eventId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("audit_log")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 4 — Planning members + invitations
+// ───────────────────────────────────────────────────────────────────────
+
+/// A user inside a planning room. Distinct from event_invitee (who only
+/// receives the final published plan). See docs/01 §5.
+///
+/// Roles:
+///   admin       — creator equivalent; can invite/remove, lock/unlock,
+///                 change tier, manage segments
+///   contributor — can propose, object, lock segments (if no objections)
+///   observer    — read-only; useful as the +1 to round out odd-count
+///                 groups so the protocol's even-count rule holds
+model PlanningMember {
+  id          String   @id @default(uuid()) @db.Uuid
+  eventId     String   @db.Uuid
+  userId      String
+  role        String   @default("contributor") @db.VarChar(16)
+  joinedAt    DateTime @default(now())
+  invitedById String?
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@map("planning_member")
+}
+
+/// Pending invitation to join an event as a planning member.
+/// Token is the email-link credential; opaque to the user beyond the URL.
+model EventInvitation {
+  id        String   @id @default(uuid()) @db.Uuid
+  eventId   String   @db.Uuid
+  email     String   @db.VarChar(255)
+  role      String   @default("contributor") @db.VarChar(16)
+  token     String   @unique @db.VarChar(128)
+  status    String   @default("pending") @db.VarChar(16) // 'pending' | 'accepted' | 'declined' | 'revoked' | 'expired'
+  expiresAt DateTime
+  inviterId String
+  createdAt DateTime @default(now())
+  acceptedAt DateTime?
+
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  inviter User  @relation("InvitationSender", fields: [inviterId], references: [id])
+
+  @@unique([eventId, email]) // one live invite per email per event
+  @@index([token])
+  @@index([eventId, status])
+  @@map("event_invitation")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 5b — Event invitees (the people who attend, not the people who decide)
+// See docs/01 §5 (two member concepts).
+// ───────────────────────────────────────────────────────────────────────
+
+/// Someone invited to ATTEND an event after publish — distinct from the
+/// PlanningMember (who deliberates inside the room).
+///
+/// Authentication: none. Each invitee identifies themselves via an unguessable
+/// rsvpToken that travels in their invite email link. Email and token are
+/// independently unique per event.
+///
+/// Status states:
+///   pending  — added but hasn't RSVP'd yet
+///   yes      — confirmed attending
+///   no       — declined
+///   maybe    — undecided / tentative
+model EventInvitee {
+  id            String    @id @default(uuid()) @db.Uuid
+  eventId       String    @db.Uuid
+  email         String    @db.VarChar(255)
+  name          String?   @db.VarChar(120)
+  rsvpToken     String    @unique @db.VarChar(64)
+  status        String    @default("pending") @db.VarChar(16) // 'pending' | 'yes' | 'no' | 'maybe'
+  /// JSON object keyed by question slug → answer string. Reserved for
+  /// Phase 5c when Occasion+ tier unlocks custom RSVP questions.
+  customAnswers Json?
+  addedById     String
+  addedAt       DateTime  @default(now())
+  invitedAt     DateTime? // when the "you're invited" email was sent (null until send)
+  respondedAt   DateTime?
+
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  addedBy User  @relation("InviteeAdder", fields: [addedById], references: [id])
+  scheduledReminders ScheduledReminder[]
+
+  @@unique([eventId, email])
+  @@index([rsvpToken])
+  @@index([eventId, status])
+  @@map("event_invitee")
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Phase 5c — Scheduled email reminders
+// ───────────────────────────────────────────────────────────────────────
+
+/// A reminder we promised to send at some point in the future. Mirrors the
+/// BullMQ job state in Postgres so we can:
+///   - Show admins "2 reminders scheduled" without round-tripping to Redis
+///   - Cancel everything for an event by deleting / updating rows
+///   - Survive a Redis flush (we re-enqueue from this table on startup if needed)
+///
+/// `kind` is the discriminator. Today: 'rsvp_nudge' (per-invitee) and
+/// 'event_tomorrow' (per-event fan-out). Add new kinds without a migration.
+///
+/// `bullJobId` is the BullMQ job id (typically "nudge:{inviteeId}" or
+/// "tomorrow:{eventId}") so cancellation maps both ways cleanly.
+model ScheduledReminder {
+  id        String    @id @default(uuid()) @db.Uuid
+  eventId   String    @db.Uuid
+  /// Optional — set for per-invitee jobs like rsvp_nudge.
+  inviteeId String?   @db.Uuid
+  kind      String    @db.VarChar(32) // 'rsvp_nudge' | 'event_tomorrow'
+  runAt     DateTime
+  status    String    @default("scheduled") @db.VarChar(16) // 'scheduled' | 'sent' | 'cancelled' | 'failed' | 'skipped'
+  bullJobId String?   @db.VarChar(120)
+  payload   Json?
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+  error     String?   @db.Text
+
+  event   Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  invitee EventInvitee? @relation(fields: [inviteeId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, status])
+  @@index([runAt, status])
+  @@index([bullJobId])
+  @@map("scheduled_reminder")
+}
+
+/// Phase 6 — every Claude API call's token usage + cost. Append-only.
+/// The `AiBudgetGuard` sums `costMinor` per event to enforce the spend cap;
+/// the `/ai/usage` admin endpoint surfaces the running total.
+///
+/// `costMinor` is in *minor units of USD*, i.e. cents. Anthropic prices are
+/// in USD; conversion to NGN happens at billing time, not at insert.
+model AiUsage {
+  id              String   @id @default(uuid()) @db.Uuid
+  /// Null when an action runs outside an event context (rare — e.g. global
+  /// dry-run during a system prompt eval).
+  eventId         String?  @db.Uuid
+  actorUserId     String?
+  /// Stable identifier for what was requested. Convention: `noun.verb`
+  /// matching the audit log: `ai.suggest_proposals`, `ai.copilot_draft`,
+  /// `ai.vibe_pack`, `ai.holiday_scanner`.
+  action          String   @db.VarChar(64)
+  /// e.g. `claude-sonnet-4-5`, `claude-opus-4-7`.
+  model           String   @db.VarChar(64)
+  inputTokens     Int      @default(0)
+  cachedTokens    Int      @default(0)
+  outputTokens   Int       @default(0)
+  /// Estimated cost in USD cents. `0` allowed (cache-only hits).
+  costMinor       Int      @default(0)
+  /// Surface the failure mode so we can audit how often jailbreak attempts /
+  /// upstream errors actually happen. Null on success.
+  error           String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  event Event? @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, createdAt])
+  @@index([actorUserId, createdAt])
+  @@map("ai_usage")
+}
+
+/// Phase 7 — post-event review. Every planning member of an event that has
+/// reached state='past' can submit ONE review of the event creator (planner
+/// reviews land in Phase 9). The aggregate writes to `user_profile.ratingAvg`
+/// + `ratingCount` (already in the schema from Phase 1).
+///
+/// `weight` (default 1.00) reserved for 7·E's anti-gaming pass — will be
+/// updated by the worker on insert based on (a) segment-completion % of the
+/// event when reviewed, (b) the reviewer's own tenure. Plain unweighted
+/// average until then.
+model EventReview {
+  id          String   @id @default(uuid()) @db.Uuid
+  eventId     String   @db.Uuid
+  /// Planning member who left the review.
+  reviewerId  String
+  /// The user being reviewed. For Phase 7 this is always `event.creatorId`;
+  /// Phase 9 will add a second review per event for the hired planner.
+  revieweeId  String
+  /// 1-5 stars, validated at the API edge. Stored as Int rather than Decimal
+  /// because the source-of-truth is integer — `ratingAvg` does the rolling
+  /// decimal math on user_profile.
+  rating      Int
+  /// Optional free-form comment. Visible to the reviewee (i.e. creator); the
+  /// aggregate is visible publicly per the 7·F visibility model.
+  comment     String?  @db.Text
+  /// 7·E anti-gaming weight. Default 1.00 → unweighted (current behavior).
+  weight      Decimal  @default(1.00) @db.Decimal(3, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  reviewer User  @relation("ReviewGiver", fields: [reviewerId], references: [id], onDelete: Cascade)
+  reviewee User  @relation("ReviewReceiver", fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  /// One review per (event, reviewer, reviewee). Lets a single event support
+  /// reviews of both the creator AND the planner later without schema work.
+  @@unique([eventId, reviewerId, revieweeId])
+  @@index([revieweeId, createdAt])
+  @@index([eventId, createdAt])
+  @@map("event_review")
+}
